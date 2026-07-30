@@ -1,0 +1,40 @@
+name: Destroy
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to destroy (app layer only - cluster/VPC/ECR stay up)'
+        type: choice
+        options: [develop, staging, production]
+        required: true
+      confirm:
+        description: 'Type the environment name again to confirm'
+        required: true
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  destroy:
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    steps:
+      - name: Check confirmation
+        run: |
+          if [ "${{ inputs.confirm }}" != "${{ inputs.environment }}" ]; then
+            echo "confirm (\"${{ inputs.confirm }}\") does not match environment (\"${{ inputs.environment }}\") - aborting." >&2
+            exit 1
+          fi
+
+      - uses: actions/checkout@v4
+
+      - uses: ./.github/actions/aws-eks-context
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+          environment: ${{ inputs.environment }}
+
+      - name: Destroy app
+        working-directory: helm
+        run: ./scripts/destroy-app.sh "${{ inputs.environment }}"

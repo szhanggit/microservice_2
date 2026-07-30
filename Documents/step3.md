@@ -10,8 +10,11 @@ setup - most of that project's DB/Alloy/X-Ray/gRPC-specific pieces don't apply h
 
 2. Ingress:
    - ALB (AWS Load Balancer Controller), ingressClassName: alb
-   - Real domains from overview.md: dev.microservice_2.ekslab.xyz, staging.microservice_2.ekslab.xyz,
-     microservice_2.ekslab.xyz (one per environment, via a values-<env>.yaml)
+   - Real domains from overview.md: dev_microservice_2.ekslab.xyz, staging_microservice_2.ekslab.xyz,
+     microservice_2.ekslab.xyz (one per environment, via a values-<env>.yaml). dev/staging use an
+     underscore, not a dot, before "microservice_2" - the *.ekslab.xyz ACM cert is a single-level
+     wildcard, so a dot (dev.microservice_2.ekslab.xyz) would be two labels deep and fail TLS
+     validation; an underscore keeps it one label, which the wildcard actually covers.
    - HTTPS via ACM certificate: arn:aws:acm:ca-central-1:286664220642:certificate/79114ecf-5ba1-4fac-a025-4709372825fe
      (a shared multi-SAN cert also covering microservice_0's domain - confirmed intentional)
    - ssl-redirect 443, healthcheck-path /health (matches step2's Nginx health endpoint)
@@ -76,8 +79,8 @@ modules/eks-external-dns/
 helm/
 ├── Chart.yaml
 ├── values.yaml                    # defaults: image left blank, cert ARN, blank domain
-├── values-develop.yaml            # replicas: 1, domain: dev.microservice_2.ekslab.xyz
-├── values-staging.yaml            # replicas: 2, domain: staging.microservice_2.ekslab.xyz
+├── values-develop.yaml            # replicas: 1, domain: dev_microservice_2.ekslab.xyz
+├── values-staging.yaml            # replicas: 2, domain: staging_microservice_2.ekslab.xyz
 ├── values-production.yaml         # replicas: 3, domain: microservice_2.ekslab.xyz
 ├── .helmignore
 ├── justfile                       # update-kubeconfig, deploy-app, destroy-app, rollback
