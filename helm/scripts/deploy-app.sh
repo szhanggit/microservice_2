@@ -29,6 +29,15 @@ IMAGE_REPO="$ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/microservice2-$ENV/fronten
 
 echo "frontend -> $IMAGE_REPO:$TAG"
 
+# --create-namespace is the only mechanism managing the namespace's existence
+# - the chart itself does NOT have its own namespace.yaml (removed). Helm
+# writes its own release-tracking Secret into the target namespace as part
+# of the install transaction, before it's guaranteed any chart-managed
+# Namespace resource has been applied - so a chart trying to own its own
+# target namespace is inherently order-fragile on a true first install
+# ("namespaces \"frontend\" not found"). Relying on --create-namespace alone
+# avoids both that and the opposite "already exists" ownership conflict from
+# combining it with a chart-owned Namespace resource.
 helm upgrade --install frontend "$HELM_DIR" \
   --namespace frontend --create-namespace \
   -f "$HELM_DIR/values-$ENV.yaml" \

@@ -1,0 +1,76 @@
+name: Deploy
+
+on:
+  push:
+    branches: [develop, staging, master]
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  AWS_REGION: ca-central-1
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: ${{ github.ref_name == 'master' && 'production' || github.ref_name }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Resolve environment name
+        id: env
+        run: |
+          case "${{ github.ref_name }}" in
+            develop) echo "name=develop" >> "$GITHUB_OUTPUT" ;;
+            staging) echo "name=staging" >> "$GITHUB_OUTPUT" ;;
+            master)  echo "name=production" >> "$GITHUB_OUTPUT" ;;
+            *) echo "Unexpected branch: ${{ github.ref_name }}" >&2; exit 1 ;;
+          esac
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        working-directory: components/frontend
+        run: npm ci
+
+      - name: Run unit tests
+        working-directory: components/frontend
+        run: npm run test -- --watch=false --browsers=ChromeHeadless
+
+      - uses: ./.github/actions/aws-eks-context
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+          environment: ${{ steps.env.outputs.name }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Resolve image coordinates
+        id: image
+        run: |
+          echo "sha=$(git rev-parse --short HEAD)" >> "$GITHUB_OUTPUT"
+          echo "account_id=$(aws sts get-caller-identity --query Account --output text)" >> "$GITHUB_OUTPUT"
+
+      - name: Build and push image
+        working-directory: components/frontend
+        env:
+          ENV_NAME: ${{ steps.env.outputs.name }}
+          GIT_SHA: ${{ steps.image.outputs.sha }}
+          ACCOUNT_ID: ${{ steps.image.outputs.account_id }}
+        run: |
+          REGISTRY="$ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com"
+          IMAGE_REPO="$REGISTRY/microservice2-$ENV_NAME/frontend"
+
+          aws ecr get-login-password --region "$AWS_REGION" | docker login --username AWS --password-stdin "$REGISTRY"
+
+          docker build \
+            --build-arg NG_APP_ENV="$ENV_NAME" \
+            --build-arg GIT_SHA="$GIT_SHA" \
+            -t "$IMAGE_REPO:$GIT_SHA" \
+            .
+          docker push "$IMAGE_REPO:$GIT_SHA"
+
+      - name: Deploy
+        working-directory: helm
+        run: bash scripts/deploy-app.sh "${{ steps.env.outputs.name }}" "${{ steps.image.outputs.sha }}"

@@ -8,7 +8,7 @@
 
 feature/* → develop (PR合并) → 触发Dev环境部署
 develop → staging (PR合并) → 触发Staging环境部署  
-staging → main/production (PR合并) → 触发Prod环境部署
+staging → master/production (PR合并) → 触发Prod环境部署
 
 
 
@@ -24,8 +24,8 @@ CI/CD: GitHub Actions
 
 
 
-Dev: dev.microservice_2.ekslab.xyz
-Staging: staging.microservice_2.ekslab.xyz
+Dev: dev_microservice_2.ekslab.xyz
+Staging: staging_microservice_2.ekslab.xyz
 Prod: microservice_2.ekslab.xyz
 
 

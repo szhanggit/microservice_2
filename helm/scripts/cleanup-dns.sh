@@ -15,12 +15,17 @@
 # Usage: ./cleanup-dns.sh <env> <hostname>
 #   hostname is the exact value of the Ingress's
 #   external-dns.alpha.kubernetes.io/hostname annotation, e.g.
-#   dev.microservice_2.ekslab.xyz
+#   dev_microservice_2.ekslab.xyz
 set -euo pipefail
 
 ENV="${1:?Usage: $0 <env> <hostname>}"
 HOSTNAME="${2:?Usage: $0 <env> <hostname>}"
-DOMAIN="${HOSTNAME#*.}"
+# Fixed, not derived from $HOSTNAME by stripping one label - that breaks for
+# any hostname with more than one label before the zone (e.g. a hostname like
+# "a.b.ekslab.xyz" would wrongly derive "b.ekslab.xyz" as the zone instead of
+# the real zone "ekslab.xyz"). Matches microservice_2_terraform's
+# var.route53_domain default.
+DOMAIN="${ROUTE53_DOMAIN:-ekslab.xyz}"
 REGION="${AWS_REGION:-ca-central-1}"
 CLUSTER_NAME="microservice2-$ENV"
 
