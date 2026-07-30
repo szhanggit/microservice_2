@@ -1,0 +1,5 @@
+replicas: 2
+
+ingress:
+  domain: staging.microservice_2.ekslab.xyz
+  loadBalancerName: microservice2-staging-ingress

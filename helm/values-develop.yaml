@@ -1,0 +1,5 @@
+replicas: 1
+
+ingress:
+  domain: dev.microservice_2.ekslab.xyz
+  loadBalancerName: microservice2-develop-ingress

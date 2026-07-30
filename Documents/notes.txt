@@ -1,0 +1,13 @@
+cd /mnt/d/git/microservice_2_terraform
+just apply develop
+just apply staging
+just apply production
+just destroy develop
+just destroy staging
+just destroy production
+
+http://localhost:8080/
+
+
+cd /mnt/d/git/microservice_0/Helm
+just deploy-app

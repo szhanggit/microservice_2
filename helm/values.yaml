@@ -1,0 +1,32 @@
+# Target namespace for every resource in this chart. Same value across all
+# three environments - they're separate clusters, not namespaces, so this is
+# purely organizational within each cluster.
+namespace: frontend
+
+# Image reference - left blank on purpose. Supplied via --set at deploy time
+# by scripts/deploy-app.sh, which resolves the ECR repository URL for the
+# current AWS account/environment and the git SHA tag. For a plain
+# `helm install` without that script, pass a literal
+# <account-id>.dkr.ecr.ca-central-1.amazonaws.com/microservice2-<env>/frontend
+# and a tag explicitly.
+image:
+  repository: ""
+  tag: ""
+  pullPolicy: IfNotPresent
+
+# Fixed per environment (see values-<env>.yaml) rather than autoscaled - a
+# low-traffic static demo has no real need for an HPA/PodDisruptionBudget.
+replicas: 1
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 64Mi
+  limits:
+    cpu: 200m
+    memory: 128Mi
+
+ingress:
+  domain: ""             # set per environment in values-<env>.yaml
+  loadBalancerName: ""   # set per environment in values-<env>.yaml
+  certificateArn: "arn:aws:acm:ca-central-1:286664220642:certificate/79114ecf-5ba1-4fac-a025-4709372825fe"

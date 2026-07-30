@@ -1,0 +1,10 @@
+apiVersion: v2
+name: microservice2-frontend
+description: >-
+  Static Angular+Nginx frontend for the microservice2 demo (Deployment,
+  Service, Ingress). The AWS Load Balancer Controller and ExternalDNS are
+  Terraform-managed (see microservice_2_terraform/modules/eks-alb-controller
+  and eks-external-dns) - not part of this chart.
+type: application
+version: 0.1.0
+appVersion: "1.0.0"

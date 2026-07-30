@@ -1,0 +1,24 @@
+set shell := ["bash", "-uc"]
+
+# Point local kubectl/helm at the EKS cluster for one environment. Assumes
+# microservice_2_terraform has already been applied for it.
+update-kubeconfig env="develop":
+    ./scripts/update-kubeconfig.sh {{env}}
+
+# Deploys the frontend Helm release. tag defaults to the current commit's
+# short SHA, not "latest" - so every build is independently addressable/
+# rollback-able instead of overwriting the same floating tag each time.
+deploy-app env="develop" tag=`git rev-parse --short HEAD`: (update-kubeconfig env)
+    ./scripts/deploy-app.sh {{env}} {{tag}}
+
+# Tear down the app - run this BEFORE `just destroy <env>` in
+# microservice_2_terraform, or the ALB's security groups/ENIs can block
+# Terraform from deleting the VPC. Also cleans up the Route53 records
+# ExternalDNS created (policy=upsert-only means it never does this itself).
+destroy-app env="develop": (update-kubeconfig env)
+    ./scripts/destroy-app.sh {{env}}
+
+# Rolls back the frontend Helm release - to the immediately preceding
+# revision if `revision` is left blank, or to a specific one otherwise.
+rollback env="develop" revision="": (update-kubeconfig env)
+    ./scripts/rollback.sh {{env}} {{revision}}

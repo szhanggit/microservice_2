@@ -1,0 +1,9 @@
+frontend deployed to namespace {{ .Values.namespace }}.
+
+Once the AWS Load Balancer Controller has provisioned the ALB for the
+Ingress, find its hostname with:
+  kubectl get ingress -n {{ .Values.namespace }} frontend -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'
+
+If ExternalDNS has picked up the Ingress's hostname annotation, the app is
+also reachable at:
+  https://{{ .Values.ingress.domain }}

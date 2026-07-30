@@ -1,0 +1,44 @@
+# ingressClassName: alb targets the AWS Load Balancer Controller (its IAM role
+# provisioned via microservice_2_terraform/modules/eks-alb-controller, the
+# controller itself installed via that module's helm_release), which creates
+# a real internet-facing Application Load Balancer for this Ingress.
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: frontend
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "frontend.labels" . | nindent 4 }}
+  annotations:
+    # Load Balancer Name
+    alb.ingress.kubernetes.io/load-balancer-name: {{ required "ingress.loadBalancerName is required" .Values.ingress.loadBalancerName }}
+    # Health Check Settings
+    alb.ingress.kubernetes.io/healthcheck-protocol: HTTP
+    alb.ingress.kubernetes.io/healthcheck-port: traffic-port
+    alb.ingress.kubernetes.io/healthcheck-path: /health
+    alb.ingress.kubernetes.io/healthcheck-interval-seconds: '15'
+    alb.ingress.kubernetes.io/healthcheck-timeout-seconds: '5'
+    alb.ingress.kubernetes.io/success-codes: '200'
+    alb.ingress.kubernetes.io/healthy-threshold-count: '2'
+    alb.ingress.kubernetes.io/unhealthy-threshold-count: '2'
+    # SSL Settings
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTPS":443}, {"HTTP":80}]'
+    alb.ingress.kubernetes.io/certificate-arn: {{ required "ingress.certificateArn is required" .Values.ingress.certificateArn }}
+    alb.ingress.kubernetes.io/ssl-redirect: '443'
+    # External DNS - for creating a Record Set in Route53 (see the
+    # Terraform-managed ExternalDNS install, modules/eks-external-dns)
+    external-dns.alpha.kubernetes.io/hostname: {{ required "ingress.domain is required" .Values.ingress.domain }}
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+spec:
+  ingressClassName: alb
+  rules:
+    - http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: frontend
+                port:
+                  number: 80

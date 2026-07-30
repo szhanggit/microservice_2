@@ -1,0 +1,5 @@
+replicas: 3
+
+ingress:
+  domain: microservice_2.ekslab.xyz
+  loadBalancerName: microservice2-production-ingress

@@ -1,0 +1,15 @@
+main {
+  font-family: system-ui, sans-serif;
+  max-width: 32rem;
+  margin: 4rem auto;
+  text-align: center;
+}
+
+dt {
+  font-weight: 600;
+  margin-top: 1rem;
+}
+
+dd {
+  margin: 0;
+}
