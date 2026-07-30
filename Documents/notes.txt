@@ -15,3 +15,8 @@ https://microservice_2.ekslab.xyz/
 cd /mnt/d/git/microservice_2/helm
 just deploy-app
 just destroy-app
+
+
+cd /mnt/d/git/microservice_2_terraform/github-actions-oidc
+terraform init
+terraform apply
