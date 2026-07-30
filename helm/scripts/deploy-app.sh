@@ -29,8 +29,14 @@ IMAGE_REPO="$ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/microservice2-$ENV/fronten
 
 echo "frontend -> $IMAGE_REPO:$TAG"
 
+# No --create-namespace: the chart already manages the Namespace itself via
+# templates/namespace.yaml. Adding --create-namespace on top pre-creates the
+# same namespace without Helm's ownership annotations, so the chart's own
+# namespace.yaml then fails with "namespaces \"frontend\" already exists"
+# when Helm refuses to adopt a resource it doesn't recognize as owned by
+# this release.
 helm upgrade --install frontend "$HELM_DIR" \
-  --namespace frontend --create-namespace \
+  --namespace frontend \
   -f "$HELM_DIR/values-$ENV.yaml" \
   --set image.repository="$IMAGE_REPO" \
   --set image.tag="$TAG" \
