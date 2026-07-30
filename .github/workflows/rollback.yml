@@ -1,0 +1,34 @@
+name: Rollback
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to roll back'
+        type: choice
+        options: [develop, staging, production]
+        required: true
+      revision:
+        description: 'Helm revision to roll back to (blank = previous revision)'
+        required: false
+        default: ''
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  rollback:
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: ./.github/actions/aws-eks-context
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+          environment: ${{ inputs.environment }}
+
+      - name: Roll back
+        working-directory: helm
+        run: ./scripts/rollback.sh "${{ inputs.environment }}" "${{ inputs.revision }}"
