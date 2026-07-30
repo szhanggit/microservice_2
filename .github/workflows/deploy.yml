@@ -73,4 +73,4 @@ jobs:
 
       - name: Deploy
         working-directory: helm
-        run: ./scripts/deploy-app.sh "${{ steps.env.outputs.name }}" "${{ steps.image.outputs.sha }}"
+        run: bash scripts/deploy-app.sh "${{ steps.env.outputs.name }}" "${{ steps.image.outputs.sha }}"

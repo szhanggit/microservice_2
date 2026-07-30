@@ -23,4 +23,4 @@ runs:
         aws-region: ${{ inputs.aws-region }}
 
     - shell: bash
-      run: ./helm/scripts/update-kubeconfig.sh ${{ inputs.environment }}
+      run: bash helm/scripts/update-kubeconfig.sh ${{ inputs.environment }}

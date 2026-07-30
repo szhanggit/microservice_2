@@ -31,4 +31,4 @@ jobs:
 
       - name: Roll back
         working-directory: helm
-        run: ./scripts/rollback.sh "${{ inputs.environment }}" "${{ inputs.revision }}"
+        run: bash scripts/rollback.sh "${{ inputs.environment }}" "${{ inputs.revision }}"
