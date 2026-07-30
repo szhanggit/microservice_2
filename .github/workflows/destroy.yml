@@ -37,4 +37,4 @@ jobs:
 
       - name: Destroy app
         working-directory: helm
-        run: ./scripts/destroy-app.sh "${{ inputs.environment }}"
+        run: bash scripts/destroy-app.sh "${{ inputs.environment }}"

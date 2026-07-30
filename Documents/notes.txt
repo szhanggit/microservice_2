@@ -12,3 +12,4 @@ https://dev_microservice_2.ekslab.xyz/
 
 cd /mnt/d/git/microservice_2/helm
 just deploy-app
+just destroy-app
