@@ -20,3 +20,6 @@ just destroy-app
 cd /mnt/d/git/microservice_2_terraform/github-actions-oidc
 terraform init
 terraform apply
+
+
+claude --resume b31fb55c-704f-4d40-9a8d-c62d39e1988f --dangerously-skip-permissions 
